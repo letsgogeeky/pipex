@@ -1,3 +1,15 @@
+# **************************************************************************** #
+#                                                                              #
+#                                                         :::      ::::::::    #
+#    Makefile                                           :+:      :+:    :+:    #
+#                                                     +:+ +:+         +:+      #
+#    By: ramoussa <ramoussa@student.42.fr>          +#+  +:+       +#+         #
+#                                                 +#+#+#+#+#+   +#+            #
+#    Created: 2023/08/12 20:26:46 by ramoussa          #+#    #+#              #
+#    Updated: 2023/08/12 20:26:47 by ramoussa         ###   ########.fr        #
+#                                                                              #
+# **************************************************************************** #
+
 NAME:= pipex
 
 CFLAGS	:= -Wextra -Wall -Werror -g -O3 -funroll-loops -flto
@@ -18,6 +30,11 @@ ${NAME}: ${OBJS}
 	@$(CC) $(OBJS) $(LIBS) $(HEADERS) -o $(NAME) && echo "Successful build...!"
 
 BASELIB:
+	@if [ -d ${BASELIB} ]; then\
+		echo "${BASELIB} already exists... proceeding to next step.";\
+	else\
+		git submodule update;\
+	fi
 	make --directory=${BASELIB}
 
 clean:
