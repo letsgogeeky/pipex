@@ -6,7 +6,7 @@
 #    By: ramoussa <ramoussa@student.42.fr>          +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2023/08/12 20:26:46 by ramoussa          #+#    #+#              #
-#    Updated: 2023/08/15 01:11:47 by ramoussa         ###   ########.fr        #
+#    Updated: 2023/08/15 02:40:52 by ramoussa         ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
@@ -18,7 +18,7 @@ BASELIB := ./lib/ft-baselib
 HEADERS := -I ./include -I ${BASELIB}/include
 LIBS := ${BASELIB}/baselib.a
 
-SRCS := helper.c main.c
+SRCS := helper.c file_manager.c main.c
 OBJS := ${addprefix src/, ${SRCS:.c=.o}}
 
 all: BASELIB ${NAME}

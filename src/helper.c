@@ -6,7 +6,7 @@
 /*   By: ramoussa <ramoussa@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/08/15 01:01:38 by ramoussa          #+#    #+#             */
-/*   Updated: 2023/08/15 01:54:31 by ramoussa         ###   ########.fr       */
+/*   Updated: 2023/08/15 02:14:40 by ramoussa         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -19,4 +19,11 @@ void	abort_and_exit(char *message, char **on_cmd, int code)
 	ft_putendl_fd(message, 2);
 	free(message);
 	exit(code);	
+}
+
+int	is_here_doc(char **argv)
+{
+	if(ft_strncmp(argv[1], "here_doc", 9))
+		return (0);
+	return (1);
 }

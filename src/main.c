@@ -6,18 +6,11 @@
 /*   By: ramoussa <ramoussa@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/08/12 22:16:30 by ramoussa          #+#    #+#             */
-/*   Updated: 2023/08/15 02:00:45 by ramoussa         ###   ########.fr       */
+/*   Updated: 2023/08/15 02:40:14 by ramoussa         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "pipex.h"
-
-int	is_here_doc(char **argv)
-{
-	if(ft_strncmp(argv[1], "here_doc", 9))
-		return (0);
-	return (1);
-}
 
 void	read_here_doc(char **argv)
 {
@@ -31,55 +24,16 @@ void	read_here_doc(char **argv)
 	doc = get_next_line(0);
 	while (doc && ft_strncmp(limiter, doc, ft_strlen(doc) - 1))
 	{
-		// free(doc);
+		free(doc);
 		ft_putstr_fd(doc, ipc[1]);		
 		doc = get_next_line(0);
 	}
-	// free(limiter);
-	// if (doc)
-	// 	free(doc);
+	free(limiter);
+	if (doc)
+		free(doc);
 	dup2(ipc[0], 0);
 	close(ipc[0]);
 	close(ipc[1]);
-}
-
-char	*validate_infile(char *infile)
-{
-	if (access(infile, F_OK))
-		return (ft_strjoin(infile, " :: file does not exist."));
-	if (access(infile, R_OK))
-		return (ft_strjoin(infile, " :: permission denied."));
-	return (NULL);
-}
-
-char	*validate_outfile(char *outfile)
-{
-	if (!access(outfile, F_OK) && access(outfile, W_OK) < 0)
-		return (ft_strjoin(outfile, " :: write permission denied."));
-	return (NULL);
-}
-
-char	*find_path(char **envp, char *program)
-{
-	int		idx;
-	char	*path;
-	char	**env_paths;
-	idx = 0;
-	while (envp && envp[idx] && ft_strncmp(envp[idx], "PATH=", 5))
-		idx++;
-	env_paths = ft_split(envp[idx], ':');
-	idx = 0;
-	while(env_paths[idx])
-	{
-		path = ft_strjoin(env_paths[idx], "/");
-		path = ft_strjoin(path, program);
-		if(access(path, X_OK | F_OK) != -1)
-			return (path);
-		free(path);
-		path = NULL;
-		idx++;
-	}
-	return (path);
 }
 
 int	prepare_input(char **argv)
@@ -120,12 +74,27 @@ void	prepare_outfile(int argc, char **argv)
 	close(fd);
 }
 
+void	cmd_runner(char **argv, char **envp, int *ipc, int cmd_arg_idx)
+{
+	char	**cmd;
+	char	*path;
+	
+	cmd = ft_split(argv[cmd_arg_idx], ' ');
+	dup2(ipc[1], 1);
+	close(ipc[1]);
+	close(ipc[0]);
+	if (argv[cmd_arg_idx + 2] == NULL)
+		prepare_outfile(cmd_arg_idx + 2, argv);
+	path = find_path(envp, cmd[0]);
+	if (execve(path, cmd, envp) == -1)
+		abort_and_exit(ft_strjoin(cmd[0], " failed to execute."), cmd, 127);
+}
+
 int main(int argc, char **argv, char **envp)
 {
     pid_t pid;
     int ipc[2];
-	char	**cmd;
-	char	*path;
+	
 	int		arg_idx;
 
     if (argc < 4 || (is_here_doc(argv) && argc < 5))
@@ -133,22 +102,13 @@ int main(int argc, char **argv, char **envp)
 	arg_idx = prepare_input(argv);
 	while (arg_idx < argc - 1)
 	{
-		pipe(ipc);
+		if (pipe(ipc))
+			abort_and_exit(ft_strdup("Failed to create a pipe."), NULL, 1);
 		pid = fork();
+		if (pid == -1)
+			abort_and_exit(ft_strdup("Failed to create a subprocess!"), NULL, 1);
 		if (pid == 0)
-		{
-			cmd = ft_split(argv[arg_idx], ' ');
-			dup2(ipc[1], 1);
-			close(ipc[1]);
-			close(ipc[0]);
-			if (arg_idx == argc - 2)
-			{
-				prepare_outfile(argc, argv);
-			}
-			path = find_path(envp, cmd[0]);
-			if (execve(path, cmd, envp) == -1)
-				abort_and_exit(ft_strjoin(cmd[0], " failed to execute."), cmd, 127);
-		}
+			cmd_runner(argv, envp, ipc, arg_idx);
 		dup2(ipc[0], 0);
 		close(ipc[0]);
 		close(ipc[1]);
