@@ -6,4 +6,6 @@
 # include <stdio.h>
 # include <unistd.h>
 
+void	abort_and_exit(char *message, char **on_cmd, int code);
+
 #endif
