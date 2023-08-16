@@ -6,7 +6,7 @@
 /*   By: ramoussa <ramoussa@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/08/12 22:16:30 by ramoussa          #+#    #+#             */
-/*   Updated: 2023/08/15 02:40:14 by ramoussa         ###   ########.fr       */
+/*   Updated: 2023/08/16 22:05:17 by ramoussa         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -35,8 +35,51 @@ void	read_here_doc(char **argv)
 	close(ipc[0]);
 	close(ipc[1]);
 }
+char	*validate_cmd(char *cmd)
+{
+	int	idx;
 
-int	prepare_input(char **argv)
+	if (ft_strncmp(cmd, "awk ", 4) != 0)
+		return (ra_replace(cmd, '\"', ' '), ra_replace(cmd, '\'', ' '), cmd);
+	idx = 4;
+	while (ra_is_whiteshapce(cmd[idx]))
+		idx++;
+	// if ((cmd[idx] == '\'' || cmd[idx] == '\"') && (cmd[idx+1] == '\'' || cmd[idx+1] == '\"'))
+	// 	abort_and_exit(ft_strdup("Syntax error"), NULL, 2);
+	cmd[4] = ' ';
+	cmd[ft_strlen(cmd) - 1] = ' ';
+	return (ra_replace(cmd, '\\', ' '), cmd);
+}
+
+char	**prep_cmd(char **cmd)
+{
+	int		len;
+	int		idx;
+	char	**result;
+	char	*cmd_params;
+
+	len = str_arr_len(cmd);
+	if (len == 0)
+		return (NULL);
+	if (len <= 3)
+		return (cmd);
+	idx = 0;
+	result = (char **)malloc(3 * sizeof(char *));
+	result[idx] = ft_strdup(cmd[idx]);
+	idx++;
+	cmd_params = ft_strjoin_s1_free(ft_strdup(""), cmd[idx]);
+	idx++;
+	while (cmd[idx])
+	{
+		cmd_params = ft_strjoin_s1_free(ft_strjoin_s1_free(cmd_params, " "), cmd[idx]);
+		idx++;
+	}
+	result[1] = cmd_params;
+	result[2] = NULL;
+	return (result);
+}
+
+char	*prepare_input(char **argv)
 {
 	int		arg_idx;
 	char	*file_access;
@@ -46,17 +89,15 @@ int	prepare_input(char **argv)
 	if (is_here_doc(argv))
 	{
 		read_here_doc(argv);
-		arg_idx += 2;
-		return (arg_idx);
+		return (NULL);
 	}
 	file_access = validate_infile(argv[arg_idx]);
 	if (file_access)
-		abort_and_exit(file_access, NULL, 1);
+		return (ft_strjoin_s1_free(ft_strdup("pipex: "), file_access));
     fd = open(argv[arg_idx], O_RDONLY);
 	dup2(fd, 0);
 	close(fd);
-	arg_idx++;
-	return (arg_idx);
+	return (NULL);
 }
 
 void	prepare_outfile(int argc, char **argv)
@@ -65,7 +106,7 @@ void	prepare_outfile(int argc, char **argv)
 	int		fd;
 	file_access = validate_outfile(argv[argc - 1]);
 	if (file_access)
-		abort_and_exit(file_access, NULL, 1);
+		abort_and_exit(file_access, NULL, 0);
 	if (is_here_doc(argv))
 		fd = open(argv[argc - 1], O_WRONLY | O_CREAT | O_APPEND, 0644);
 	else
@@ -79,7 +120,8 @@ void	cmd_runner(char **argv, char **envp, int *ipc, int cmd_arg_idx)
 	char	**cmd;
 	char	*path;
 	
-	cmd = ft_split(argv[cmd_arg_idx], ' ');
+	cmd = ft_split(validate_cmd(argv[cmd_arg_idx]), ' ');
+	cmd = prep_cmd(cmd);
 	dup2(ipc[1], 1);
 	close(ipc[1]);
 	close(ipc[0]);
@@ -92,14 +134,17 @@ void	cmd_runner(char **argv, char **envp, int *ipc, int cmd_arg_idx)
 
 int main(int argc, char **argv, char **envp)
 {
-    pid_t pid;
-    int ipc[2];
-	
+    pid_t	pid;
+    int		ipc[2];
 	int		arg_idx;
+	char	*infile_msg;
 
     if (argc < 4 || (is_here_doc(argv) && argc < 5))
         return (1);
-	arg_idx = prepare_input(argv);
+	infile_msg = prepare_input(argv);
+	arg_idx = 2;
+	if (is_here_doc(argv))
+		arg_idx = 3;
 	while (arg_idx < argc - 1)
 	{
 		if (pipe(ipc))
@@ -107,6 +152,8 @@ int main(int argc, char **argv, char **envp)
 		pid = fork();
 		if (pid == -1)
 			abort_and_exit(ft_strdup("Failed to create a subprocess!"), NULL, 1);
+		if (pid == 0 && infile_msg != NULL)
+			abort_and_exit(infile_msg, NULL, 0);
 		if (pid == 0)
 			cmd_runner(argv, envp, ipc, arg_idx);
 		dup2(ipc[0], 0);

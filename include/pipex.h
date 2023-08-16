@@ -5,6 +5,8 @@
 # include <fcntl.h>
 # include <stdio.h>
 # include <unistd.h>
+# include <errno.h>
+# include <stdlib.h>
 
 char	*validate_infile(char *infile);
 char	*validate_outfile(char *outfile);

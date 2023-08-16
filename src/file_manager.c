@@ -6,7 +6,7 @@
 /*   By: ramoussa <ramoussa@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/08/15 02:12:50 by ramoussa          #+#    #+#             */
-/*   Updated: 2023/08/15 02:13:38 by ramoussa         ###   ########.fr       */
+/*   Updated: 2023/08/16 20:45:09 by ramoussa         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -15,9 +15,9 @@
 char	*validate_infile(char *infile)
 {
 	if (access(infile, F_OK))
-		return (ft_strjoin(infile, " :: file does not exist."));
+		return (ft_strjoin(infile, ": No such file or directory"));
 	if (access(infile, R_OK))
-		return (ft_strjoin(infile, " :: permission denied."));
+		return (ft_strjoin(infile, ": permission denied."));
 	return (NULL);
 }
 
@@ -41,12 +41,12 @@ char	*find_path(char **envp, char *program)
 	while(env_paths[idx])
 	{
 		path = ft_strjoin(env_paths[idx], "/");
-		path = ft_strjoin(path, program);
+		path = ft_strjoin_s1_free(path, program);
 		if(access(path, X_OK | F_OK) != -1)
 			return (path);
 		free(path);
 		path = NULL;
 		idx++;
 	}
-	return (path);
+	return (program);
 }
