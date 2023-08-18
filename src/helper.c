@@ -6,7 +6,7 @@
 /*   By: ramoussa <ramoussa@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/08/15 01:01:38 by ramoussa          #+#    #+#             */
-/*   Updated: 2023/08/16 19:45:37 by ramoussa         ###   ########.fr       */
+/*   Updated: 2023/08/18 02:16:30 by ramoussa         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -16,9 +16,8 @@ void	abort_and_exit(char *message, char **on_cmd, int code)
 {
 	if (on_cmd != NULL)
 		free(on_cmd);
+	message = ft_strjoin_s1_free(ft_strdup("pipex: "), message);
 	ft_putendl_fd(message, 2);
-	ft_putnbr_fd(errno, 2);
-	ft_putchar_fd('\n', 2);
 	free(message);
 	exit(code);	
 }

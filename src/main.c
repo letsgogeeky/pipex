@@ -6,7 +6,7 @@
 /*   By: ramoussa <ramoussa@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/08/12 22:16:30 by ramoussa          #+#    #+#             */
-/*   Updated: 2023/08/16 22:05:17 by ramoussa         ###   ########.fr       */
+/*   Updated: 2023/08/18 02:17:08 by ramoussa         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -47,6 +47,8 @@ char	*validate_cmd(char *cmd)
 	// if ((cmd[idx] == '\'' || cmd[idx] == '\"') && (cmd[idx+1] == '\'' || cmd[idx+1] == '\"'))
 	// 	abort_and_exit(ft_strdup("Syntax error"), NULL, 2);
 	cmd[4] = ' ';
+	// if (cmd[5] == '\'' || cmd[5] == '\"')
+	// 	abort_and_exit(ft_strdup("Whatever for now"), NULL, 2);
 	cmd[ft_strlen(cmd) - 1] = ' ';
 	return (ra_replace(cmd, '\\', ' '), cmd);
 }
@@ -93,7 +95,7 @@ char	*prepare_input(char **argv)
 	}
 	file_access = validate_infile(argv[arg_idx]);
 	if (file_access)
-		return (ft_strjoin_s1_free(ft_strdup("pipex: "), file_access));
+		return (file_access);
     fd = open(argv[arg_idx], O_RDONLY);
 	dup2(fd, 0);
 	close(fd);
@@ -106,7 +108,7 @@ void	prepare_outfile(int argc, char **argv)
 	int		fd;
 	file_access = validate_outfile(argv[argc - 1]);
 	if (file_access)
-		abort_and_exit(file_access, NULL, 0);
+		abort_and_exit(file_access, NULL, 1);
 	if (is_here_doc(argv))
 		fd = open(argv[argc - 1], O_WRONLY | O_CREAT | O_APPEND, 0644);
 	else
@@ -115,12 +117,27 @@ void	prepare_outfile(int argc, char **argv)
 	close(fd);
 }
 
+int	env_var_idx(char **envp, char *var)
+{
+	int		idx;
+
+	idx = 0;
+	while (envp && envp[idx] && ft_strncmp(envp[idx], var, ft_strlen(var)))
+		idx++;
+	if (!envp[idx])
+		abort_and_exit(ft_strdup("Variable not found in env."), NULL, 1);
+	return (idx);
+}
+
 void	cmd_runner(char **argv, char **envp, int *ipc, int cmd_arg_idx)
 {
 	char	**cmd;
 	char	*path;
 	
-	cmd = ft_split(validate_cmd(argv[cmd_arg_idx]), ' ');
+	if (argv[cmd_arg_idx][0] == '$')
+		cmd = ft_split(argv[cmd_arg_idx], ' ');
+	else
+		cmd = ft_split(validate_cmd(argv[cmd_arg_idx]), ' ');
 	cmd = prep_cmd(cmd);
 	dup2(ipc[1], 1);
 	close(ipc[1]);
@@ -129,7 +146,23 @@ void	cmd_runner(char **argv, char **envp, int *ipc, int cmd_arg_idx)
 		prepare_outfile(cmd_arg_idx + 2, argv);
 	path = find_path(envp, cmd[0]);
 	if (execve(path, cmd, envp) == -1)
-		abort_and_exit(ft_strjoin(cmd[0], " failed to execute."), cmd, 127);
+		abort_and_exit(ft_strjoin(cmd[0], ": command not found"), cmd, 127);
+}
+int	wait_children(pid_t last_pid)
+{
+	int	status;
+	int	exit_code;
+	int	pid;
+
+	pid = 1;
+	exit_code = 0;
+	while (pid != -1)
+	{
+		pid = waitpid(-1, &status, WNOHANG);
+		if (pid == last_pid)
+			exit_code = WEXITSTATUS(status);
+	}
+	return (exit_code);
 }
 
 int main(int argc, char **argv, char **envp)
@@ -159,8 +192,12 @@ int main(int argc, char **argv, char **envp)
 		dup2(ipc[0], 0);
 		close(ipc[0]);
 		close(ipc[1]);
-		waitpid(pid, NULL, WNOHANG);
+		if (infile_msg != NULL)
+		{
+			free(infile_msg);
+			infile_msg = NULL;
+		}
 		arg_idx++;
 	}
-    return (0);
+    return (wait_children(pid));
 }

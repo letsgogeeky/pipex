@@ -6,7 +6,7 @@
 /*   By: ramoussa <ramoussa@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/08/15 02:12:50 by ramoussa          #+#    #+#             */
-/*   Updated: 2023/08/16 20:45:09 by ramoussa         ###   ########.fr       */
+/*   Updated: 2023/08/18 01:49:08 by ramoussa         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -42,11 +42,12 @@ char	*find_path(char **envp, char *program)
 	{
 		path = ft_strjoin(env_paths[idx], "/");
 		path = ft_strjoin_s1_free(path, program);
+		// ft_putendl_fd(path, 2);
 		if(access(path, X_OK | F_OK) != -1)
 			return (path);
 		free(path);
 		path = NULL;
 		idx++;
 	}
-	return (program);
+	return (path);
 }
