@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   file_manager.c                                     :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: ramymoussa <ramymoussa@student.42.fr>      +#+  +:+       +#+        */
+/*   By: ramoussa <ramoussa@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/08/15 02:12:50 by ramoussa          #+#    #+#             */
-/*   Updated: 2023/08/21 15:15:48 by ramymoussa       ###   ########.fr       */
+/*   Updated: 2023/08/21 20:57:24 by ramoussa         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -36,6 +36,8 @@ char	*find_path(char **envp, char *program)
 
 	if (!envp || str_arr_len(envp) == 0)
 		return (ft_strjoin(ft_strdup("/usr/bin/"), program));
+	if (ft_strncmp(program, "./", 2) == 0)
+		return (ft_strdup("/bin/sh"));
 	idx = 0;
 	while (envp[idx] && ft_strncmp(envp[idx], "PATH=", 5))
 		idx++;

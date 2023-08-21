@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   main.c                                             :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: ramymoussa <ramymoussa@student.42.fr>      +#+  +:+       +#+        */
+/*   By: ramoussa <ramoussa@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/08/12 22:16:30 by ramoussa          #+#    #+#             */
-/*   Updated: 2023/08/21 15:34:21 by ramymoussa       ###   ########.fr       */
+/*   Updated: 2023/08/21 20:57:14 by ramoussa         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -38,7 +38,25 @@ void	read_here_doc(char **argv)
 char	*validate_cmd(char *cmd)
 {
 	int	idx;
-
+	char	**sh_parts;
+	char	*sh_cmd;
+	int		parts_len;
+	
+	idx = 0;
+	if (ft_strnstr(cmd, ".sh", ft_strlen(cmd)) || !ft_strncmp(cmd, "./", 2))
+	{
+		sh_parts = ft_split(cmd, ' ');
+		parts_len = str_arr_len(sh_parts);
+		if (parts_len < 2)
+			return (ra_replace(cmd, '\\', ' '), cmd);
+		while (sh_parts && sh_parts[idx + 1])
+		{
+			sh_cmd = ft_strjoin(sh_cmd, ft_strjoin(sh_parts[idx], "\\ "));
+			idx++;
+		}
+		sh_cmd = ft_strjoin(sh_cmd, sh_parts[idx]);
+		return (sh_cmd);
+	}
 	if (ft_strncmp(cmd, "awk ", 4) != 0)
 		return (ra_replace(cmd, '\"', ' '), ra_replace(cmd, '\'', ' '), cmd);
 	idx = 4;
@@ -107,7 +125,7 @@ void	prepare_outfile(int argc, char **argv)
 	char	*file_access;
 	int		fd;
 	file_access = validate_outfile(argv[argc - 1]);
-	if (file_access)
+	if (file_access != NULL)
 		abort_and_exit(file_access, NULL, 1);
 	if (is_here_doc(argv))
 		fd = open(argv[argc - 1], O_WRONLY | O_CREAT | O_APPEND, 0644);
@@ -128,15 +146,31 @@ int	env_var_idx(char **envp, char *var)
 		abort_and_exit(ft_strdup("Variable not found in env."), NULL, 1);
 	return (idx);
 }
+char	**make_sh_cmd(char *sh_script)
+{
+	char	**cmd;
+
+	cmd = (char **)malloc(4 * sizeof(char *));
+	cmd[0] = ft_strdup("/bin/sh");
+	cmd[2] = ft_strdup(sh_script);
+	cmd[3] = NULL;
+	return (cmd);
+}
 
 void	cmd_runner(char **argv, char **envp, int *ipc, int cmd_arg_idx)
 {
 	char	**cmd;
 	char	*path;
 
-	cmd = ft_split(validate_cmd(argv[cmd_arg_idx]), ' ');
-	cmd = prep_cmd(cmd);
-    path = argv[cmd_arg_idx];
+	path = argv[cmd_arg_idx];
+	if (ft_strncmp(path, "./", 2))
+	{
+		cmd = ft_split(validate_cmd(argv[cmd_arg_idx]), ' ');
+		cmd = prep_cmd(cmd);
+	}
+	else
+		cmd = make_sh_cmd(validate_cmd(argv[cmd_arg_idx]));
+	
 	dup2(ipc[1], 1);
 	close(ipc[1]);
 	close(ipc[0]);
@@ -150,8 +184,8 @@ void	cmd_runner(char **argv, char **envp, int *ipc, int cmd_arg_idx)
 	// 	perror("execve");
 	// 	exit(1);
 	// }
-		// 
 }
+
 int	wait_children(pid_t last_pid)
 {
 	int	status;
@@ -176,7 +210,7 @@ int main(int argc, char **argv, char **envp)
 	int		arg_idx;
 	char	*infile_msg;
 
-    if (argc < 4 || (is_here_doc(argv) && argc < 5))
+    if (argc < 5 || (is_here_doc(argv) && argc < 5))
         exit(1);
 	infile_msg = prepare_input(argv);
 	arg_idx = 2;
