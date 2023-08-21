@@ -6,7 +6,7 @@
 /*   By: ramoussa <ramoussa@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/08/15 01:01:38 by ramoussa          #+#    #+#             */
-/*   Updated: 2023/08/18 02:16:30 by ramoussa         ###   ########.fr       */
+/*   Updated: 2023/08/21 23:39:36 by ramoussa         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -19,12 +19,28 @@ void	abort_and_exit(char *message, char **on_cmd, int code)
 	message = ft_strjoin_s1_free(ft_strdup("pipex: "), message);
 	ft_putendl_fd(message, 2);
 	free(message);
-	exit(code);	
+	exit(code);
 }
 
-int	is_here_doc(char **argv)
+int	env_var_idx(char **envp, char *var)
 {
-	if(ft_strncmp(argv[1], "here_doc", 9))
-		return (0);
-	return (1);
+	int		idx;
+
+	idx = 0;
+	while (envp && envp[idx] && ft_strncmp(envp[idx], var, ft_strlen(var)))
+		idx++;
+	if (!envp[idx])
+		abort_and_exit(ft_strdup("Variable not found in env."), NULL, 1);
+	return (idx);
+}
+
+char	**make_sh_cmd(char *sh_script)
+{
+	char	**cmd;
+
+	cmd = (char **)malloc(4 * sizeof(char *));
+	cmd[0] = ft_strdup("/bin/sh");
+	cmd[2] = ft_strdup(sh_script);
+	cmd[3] = NULL;
+	return (cmd);
 }
