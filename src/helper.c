@@ -1,29 +1,30 @@
 /* ************************************************************************** */
 /*                                                                            */
 /*                                                        :::      ::::::::   */
-/*   pipex.h                                            :+:      :+:    :+:   */
+/*   helper.c                                           :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
 /*   By: ramoussa <ramoussa@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
-/*   Created: 2023/08/18 01:11:32 by ramoussa          #+#    #+#             */
-/*   Updated: 2023/08/18 01:11:34 by ramoussa         ###   ########.fr       */
+/*   Created: 2023/08/15 01:01:38 by ramoussa          #+#    #+#             */
+/*   Updated: 2023/08/18 02:16:30 by ramoussa         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
-#ifndef PIPEX_H
-# define PIPEX_H
+#include "pipex.h"
 
-# include "baselib.h"
-# include <fcntl.h>
-# include <stdio.h>
-# include <unistd.h>
-# include <errno.h>
-# include <stdlib.h>
+void	abort_and_exit(char *message, char **on_cmd, int code)
+{
+	if (on_cmd != NULL)
+		free(on_cmd);
+	message = ft_strjoin_s1_free(ft_strdup("pipex: "), message);
+	ft_putendl_fd(message, 2);
+	free(message);
+	exit(code);	
+}
 
-char	*validate_infile(char *infile);
-char	*validate_outfile(char *outfile);
-char	*find_path(char **envp, char *program);
-int		is_here_doc(char **argv);
-void	abort_and_exit(char *message, char **on_cmd, int code);
-
-#endif
+int	is_here_doc(char **argv)
+{
+	if(ft_strncmp(argv[1], "here_doc", 9))
+		return (0);
+	return (1);
+}
