@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   main.c                                             :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: ramoussa <ramoussa@student.42.fr>          +#+  +:+       +#+        */
+/*   By: ramymoussa <ramymoussa@student.42.fr>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/08/12 22:16:30 by ramoussa          #+#    #+#             */
-/*   Updated: 2023/08/20 05:55:47 by ramoussa         ###   ########.fr       */
+/*   Updated: 2023/08/21 15:34:21 by ramymoussa       ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -136,18 +136,21 @@ void	cmd_runner(char **argv, char **envp, int *ipc, int cmd_arg_idx)
 
 	cmd = ft_split(validate_cmd(argv[cmd_arg_idx]), ' ');
 	cmd = prep_cmd(cmd);
+    path = argv[cmd_arg_idx];
 	dup2(ipc[1], 1);
 	close(ipc[1]);
 	close(ipc[0]);
 	if (argv[cmd_arg_idx + 2] == NULL)
 		prepare_outfile(cmd_arg_idx + 2, argv);
-	path = find_path(envp, cmd[0]);
+    if (access(path, X_OK | F_OK) < 0)
+	    path = find_path(envp, cmd[0]);
 	if (execve(path, cmd, envp) == -1)
-	{
-		perror("execve");
-		exit(1);
-	}
-		// abort_and_exit(ft_strjoin(cmd[0], ": command not found"), cmd, 127);
+        abort_and_exit(ft_strjoin(cmd[0], ": command not found"), cmd, 127);
+	// {
+	// 	perror("execve");
+	// 	exit(1);
+	// }
+		// 
 }
 int	wait_children(pid_t last_pid)
 {
@@ -174,7 +177,7 @@ int main(int argc, char **argv, char **envp)
 	char	*infile_msg;
 
     if (argc < 4 || (is_here_doc(argv) && argc < 5))
-        return (1);
+        exit(1);
 	infile_msg = prepare_input(argv);
 	arg_idx = 2;
 	if (is_here_doc(argv))
