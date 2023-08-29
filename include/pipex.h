@@ -6,7 +6,7 @@
 /*   By: ramoussa <ramoussa@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/08/18 01:11:32 by ramoussa          #+#    #+#             */
-/*   Updated: 2023/08/21 23:41:52 by ramoussa         ###   ########.fr       */
+/*   Updated: 2023/08/30 00:04:46 by ramoussa         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -19,6 +19,7 @@
 # include <unistd.h>
 # include <errno.h>
 # include <stdlib.h>
+# include <sys/wait.h>
 
 typedef struct s_program
 {

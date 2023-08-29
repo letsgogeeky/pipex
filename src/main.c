@@ -6,7 +6,7 @@
 /*   By: ramoussa <ramoussa@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/08/12 22:16:30 by ramoussa          #+#    #+#             */
-/*   Updated: 2023/08/21 23:41:13 by ramoussa         ###   ########.fr       */
+/*   Updated: 2023/08/30 01:04:39 by ramoussa         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -36,7 +36,7 @@ void	cmd_runner(t_program *env, int cmd_arg_idx)
 		abort_and_exit(ft_strjoin(cmd[0], ": command not found"), cmd, 127);
 }
 
-int	wait_children(pid_t last_pid)
+int	wait_children(t_program *env)
 {
 	int	status;
 	int	exit_code;
@@ -47,9 +47,10 @@ int	wait_children(pid_t last_pid)
 	while (pid != -1)
 	{
 		pid = waitpid(-1, &status, WNOHANG);
-		if (pid == last_pid)
+		if (pid == env->pid)
 			exit_code = WEXITSTATUS(status);
 	}
+	free(env);
 	return (exit_code);
 }
 
@@ -95,5 +96,5 @@ int	main(int argc, char **argv, char **envp)
 		}
 		arg_idx++;
 	}
-	return (wait_children(env->pid));
+	return (wait_children(env));
 }
