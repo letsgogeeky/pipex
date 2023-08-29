@@ -6,7 +6,7 @@
 /*   By: ramoussa <ramoussa@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/08/21 23:36:37 by ramoussa          #+#    #+#             */
-/*   Updated: 2023/08/21 23:37:14 by ramoussa         ###   ########.fr       */
+/*   Updated: 2023/08/29 23:06:57 by ramoussa         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -31,8 +31,8 @@ void	read_here_doc(char **argv)
 	doc = get_next_line(0);
 	while (doc && ft_strncmp(limiter, doc, ft_strlen(doc) - 1))
 	{
-		free(doc);
 		ft_putstr_fd(doc, ipc[1]);
+		free(doc);
 		doc = get_next_line(0);
 	}
 	free(limiter);

@@ -6,13 +6,13 @@
 #    By: ramoussa <ramoussa@student.42.fr>          +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2023/08/12 20:26:46 by ramoussa          #+#    #+#              #
-#    Updated: 2023/08/21 23:37:46 by ramoussa         ###   ########.fr        #
+#    Updated: 2023/08/29 23:04:20 by ramoussa         ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
 NAME:= pipex
 
-CFLAGS	:= -Wextra -Wall -Werror -g -O3 -funroll-loops -flto
+CFLAGS	:= -Wextra -Wall -Werror -g -fsanitize=address
 BASELIB := ./lib/ft-baselib
 
 HEADERS := -I ./include -I ${BASELIB}/include
@@ -27,7 +27,7 @@ all: BASELIB ${NAME}
 	@$(CC) $(CFLAGS) $(HEADERS) -o $@ -c $<
 
 ${NAME}: ${OBJS}
-	@$(CC) $(OBJS) $(LIBS) $(HEADERS) -o $(NAME) && echo "Successful build...!"
+	@$(CC) $(CFLAGS) $(OBJS) $(LIBS) $(HEADERS) -o $(NAME) && echo "Successful build...!"
 
 BASELIB:
 	@if [ -d ${BASELIB} ]; then\
