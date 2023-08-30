@@ -6,7 +6,7 @@
 #    By: ramoussa <ramoussa@student.42.fr>          +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2023/08/12 20:26:46 by ramoussa          #+#    #+#              #
-#    Updated: 2023/08/30 01:27:31 by ramoussa         ###   ########.fr        #
+#    Updated: 2023/08/30 01:52:15 by ramoussa         ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
@@ -33,7 +33,8 @@ BASELIB:
 	@if [ -d ${BASELIB} ]; then\
 		echo "${BASELIB} already exists... proceeding to next step.";\
 	else\
-		git submodule update;\
+		mkdir lib;\
+		git clone git@github.com:letsgogeeky/ft-baselib.git ${BASELIB};\
 	fi
 	make --directory=${BASELIB}
 
